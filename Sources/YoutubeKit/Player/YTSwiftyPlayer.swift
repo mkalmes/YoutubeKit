@@ -240,11 +240,13 @@ open class YTSwiftyPlayer: WKWebView {
         if let videoID = playerVars["videoId"] {
             parameters["videoId"] = videoID
         }
+
+        let useEnhancedPrivacyMode = playerVars["privacyMode"] as? Bool
         
         guard let json = try? JSONSerialization.data(withJSONObject: parameters, options: []),
             let jsonString = String(data: json, encoding: String.Encoding.utf8),
             let html = htmlString?.replacingOccurrences(of: "%@", with: jsonString),
-            let baseUrl = URL(string: "https://www.youtube.com") else { return }
+            let baseUrl = youtubeURL(useEnhancedPrivacyMode: useEnhancedPrivacyMode) else { return }
         
         loadHTMLString(html, baseURL: baseUrl)
     }
@@ -268,6 +270,18 @@ open class YTSwiftyPlayer: WKWebView {
             }
             callbackHandler?(result)
         }
+    }
+
+    private func youtubeURL(useEnhancedPrivacyMode: Bool?) -> URL? {
+        let defaultURL = URL(string: "https://www.youtube.com")
+        let enhancedPrivacyURL = URL(string: "https://www.youtube-nocookie.com")
+
+        guard let useEnhancedPrivacyMode = useEnhancedPrivacyMode,
+              useEnhancedPrivacyMode == true else {
+            return defaultURL
+        }
+
+        return enhancedPrivacyURL
     }
 }
 
